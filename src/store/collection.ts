@@ -25,7 +25,7 @@ export const useCollectionStore = create<CollectionStore>((set, get) => ({
     try {
       const res = await fetch("/api/fragrances");
       const data = await res.json();
-      set({ fragrances: data, loading: false });
+      set({ fragrances: Array.isArray(data) ? data : [], loading: false });
     } catch (e) {
       set({ error: "Failed to load collection", loading: false });
     }
