@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Fragrance {
+  id               String   @id @default(cuid())
+  name             String
+  brand            String
+  year             Int?
+  concentration    String?
+  imageUrl         String?
+  fragranticaUrl   String?
+  description      String?
+  season           String   @default("[]")
+  timeOfDay        String   @default("[]")
+  occasion         String   @default("[]")
+  accords          String   @default("[]")
+  rating           Float?
+  owned            Boolean  @default(true)
+  bottleVolume     Float?
+  bottleShape      String?
+  purchasePrice    Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  collectionItem   CollectionItem?
+  fragranceNotes   FragranceNote[]
+}
+
+model CollectionItem {
+  id          String    @id @default(cuid())
+  fragranceId String    @unique
+  fragrance   Fragrance @relation(fields: [fragranceId], references: [id], onDelete: Cascade)
+  amountMl    Float?
+  position    Int       @default(0)
+  notes       String?
+  addedAt     DateTime  @default(now())
+}
+
+model Note {
+  id             String          @id @default(cuid())
+  name           String          @unique
+  family         String
+  description    String?
+  fragranceNotes FragranceNote[]
+}
+
+model FragranceNote {
+  id          String    @id @default(cuid())
+  fragranceId String
+  noteId      String
+  layer       String
+  fragrance   Fragrance @relation(fields: [fragranceId], references: [id], onDelete: Cascade)
+  note        Note      @relation(fields: [noteId], references: [id])
+
+  @@unique([fragranceId, noteId, layer])
+}
