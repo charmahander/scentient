@@ -12,6 +12,9 @@ export interface Fragrance {
   occasion: string[];
   accords: string[];
   rating?: number | null;
+  sillage?: number | null;
+  projection?: number | null;
+  longevity?: number | null;
   owned: boolean;
   bottleVolume?: number | null;
   bottleShape?: string | null;

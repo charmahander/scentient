@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Sparkles, ChevronRight } from "lucide-react";
 import { useCollection } from "@/hooks/useCollection";
-import { parseJson, getAccordColor, NOTE_FAMILIES } from "@/lib/utils";
+import { parseJson, getAccordColor } from "@/lib/utils";
+import { getFamilyGaps } from "@/lib/recommendations/discovery";
 import { NoteTag } from "@/components/shared/NoteTag";
+import { DiscoveryQuiz } from "@/components/explore/DiscoveryQuiz";
 import { Fragrance } from "@/types";
 
 function AccordWheel({ fragrances }: { fragrances: Fragrance[] }) {
@@ -89,25 +92,7 @@ function AccordWheel({ fragrances }: { fragrances: Fragrance[] }) {
 }
 
 function GapAnalysis({ fragrances }: { fragrances: Fragrance[] }) {
-  const { present, missing } = useMemo(() => {
-    const presentFamilies = new Set<string>();
-    for (const f of fragrances) {
-      const accords = parseJson<string[]>(f.accords, []);
-      for (const a of accords) {
-        const match = NOTE_FAMILIES.find((fam) => a.toLowerCase().includes(fam));
-        if (match) presentFamilies.add(match);
-      }
-      if (f.fragranceNotes) {
-        for (const fn of f.fragranceNotes) {
-          presentFamilies.add(fn.note.family);
-        }
-      }
-    }
-    return {
-      present: Array.from(presentFamilies),
-      missing: NOTE_FAMILIES.filter((f) => !presentFamilies.has(f)),
-    };
-  }, [fragrances]);
+  const { present, missing } = useMemo(() => getFamilyGaps(fragrances), [fragrances]);
 
   return (
     <div>
@@ -180,6 +165,7 @@ function NoteDistribution({ fragrances }: { fragrances: Fragrance[] }) {
 export default function ExplorePage() {
   const { fragrances } = useCollection();
   const owned = fragrances.filter((f) => f.owned);
+  const [quizOpen, setQuizOpen] = useState(false);
 
   return (
     <div className="px-5 pt-12 pb-4" style={{ background: "var(--background)", minHeight: "100vh" }}>
@@ -189,6 +175,29 @@ export default function ExplorePage() {
       <p className="text-sm mb-6" style={{ color: "var(--foreground-muted)" }}>
         Understand your scent DNA and find what's missing
       </p>
+
+      {/* Discover CTA */}
+      <button
+        onClick={() => setQuizOpen(true)}
+        className="w-full text-left p-4 rounded-2xl mb-8 flex items-center gap-3"
+        style={{
+          background: "linear-gradient(135deg, rgba(201,169,110,0.14), rgba(201,169,110,0.04))",
+          border: "1px solid rgba(201,169,110,0.25)",
+        }}
+      >
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--accent-glow)" }}>
+          <Sparkles size={18} style={{ color: "var(--accent)" }} />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-sm">Discover your next scent</p>
+          <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>
+            Answer a few questions for personalized picks
+          </p>
+        </div>
+        <ChevronRight size={16} style={{ color: "var(--accent)" }} />
+      </button>
+
+      {quizOpen && <DiscoveryQuiz onClose={() => setQuizOpen(false)} />}
 
       {/* Accord Wheel */}
       <section className="mb-8">

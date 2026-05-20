@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { X, Star, Droplets, Calendar, Heart, Trash2 } from "lucide-react";
+import { X, Star, Droplets, Calendar, Trash2, Wind, Radio, Clock } from "lucide-react";
 import { Fragrance } from "@/types";
 import { NoteTag } from "@/components/shared/NoteTag";
 import { parseJson } from "@/lib/utils";
@@ -137,6 +137,26 @@ export function FragranceDetailSheet({ fragrance, onClose, onDelete }: Fragrance
             </div>
           )}
 
+          {/* Performance */}
+          {(fragrance.sillage != null || fragrance.projection != null || fragrance.longevity != null) && (
+            <div className="mb-4 p-4 rounded-2xl" style={{ background: "var(--surface-2)" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--foreground-subtle)" }}>
+                Performance
+              </p>
+              <div className="space-y-3">
+                {fragrance.sillage != null && (
+                  <PerfBar icon={<Wind size={13} />} label="Sillage" value={fragrance.sillage} max={5} display={`${fragrance.sillage}/5`} />
+                )}
+                {fragrance.projection != null && (
+                  <PerfBar icon={<Radio size={13} />} label="Projection" value={fragrance.projection} max={5} display={`${fragrance.projection}/5`} />
+                )}
+                {fragrance.longevity != null && (
+                  <PerfBar icon={<Clock size={13} />} label="Longevity" value={fragrance.longevity} max={12} display={`~${fragrance.longevity}h`} />
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Meta */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             {seasons.length > 0 && (
@@ -192,5 +212,35 @@ export function FragranceDetailSheet({ fragrance, onClose, onDelete }: Fragrance
         </div>
       </div>
     </>
+  );
+}
+
+function PerfBar({
+  icon,
+  label,
+  value,
+  max,
+  display,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  max: number;
+  display: string;
+}) {
+  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  return (
+    <div className="flex items-center gap-3">
+      <span className="flex items-center gap-1.5 text-xs w-24 shrink-0" style={{ color: "var(--foreground-muted)" }}>
+        <span style={{ color: "var(--accent)" }}>{icon}</span>
+        {label}
+      </span>
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--surface-3)" }}>
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--accent)" }} />
+      </div>
+      <span className="text-xs w-10 text-right font-medium" style={{ color: "var(--foreground-subtle)" }}>
+        {display}
+      </span>
+    </div>
   );
 }

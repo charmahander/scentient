@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
     const {
       name, brand, year, concentration, imageUrl, fragranticaUrl,
       description, season = [], timeOfDay = [], occasion = [], accords = [],
-      rating, owned = true, bottleVolume, bottleShape, purchasePrice,
+      rating, sillage, projection, longevity,
+      owned = true, bottleVolume, bottleShape, purchasePrice,
       notes = [],
     } = body;
 
@@ -49,6 +50,9 @@ export async function POST(req: NextRequest) {
         occasion: JSON.stringify(occasion),
         accords: JSON.stringify(accords),
         rating: rating ? parseFloat(rating) : null,
+        sillage: sillage != null && sillage !== "" ? parseFloat(sillage) : null,
+        projection: projection != null && projection !== "" ? parseFloat(projection) : null,
+        longevity: longevity != null && longevity !== "" ? parseFloat(longevity) : null,
         owned,
         bottleVolume: bottleVolume ? parseFloat(bottleVolume) : null,
         bottleShape: bottleShape || "tall",

@@ -70,17 +70,29 @@ function getWeatherProfile(weather: WeatherData): WeatherProfile {
   };
 }
 
+export function scoreAccords(
+  accords: string[],
+  preferred: string[],
+  avoid: string[],
+  weights: { match?: number; penalty?: number } = {}
+): number {
+  const match = weights.match ?? 15;
+  const penalty = weights.penalty ?? 20;
+  let score = 0;
+  for (const accord of accords) {
+    const accordLower = accord.toLowerCase();
+    if (preferred.some((a) => accordLower.includes(a))) score += match;
+    if (avoid.some((a) => accordLower.includes(a))) score -= penalty;
+  }
+  return score;
+}
+
 function scoreFragrance(fragrance: Fragrance, profile: WeatherProfile): number {
   let score = 50;
   const accords = parseJson<string[]>(fragrance.accords, []);
   const seasons = parseJson<string[]>(fragrance.season, []);
 
-  // Accord matching
-  for (const accord of accords) {
-    const accordLower = accord.toLowerCase();
-    if (profile.preferredAccords.some((a) => accordLower.includes(a))) score += 15;
-    if (profile.avoidAccords.some((a) => accordLower.includes(a))) score -= 20;
-  }
+  score += scoreAccords(accords, profile.preferredAccords, profile.avoidAccords);
 
   // Season matching
   for (const season of seasons) {

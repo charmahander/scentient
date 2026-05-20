@@ -6,6 +6,7 @@ import { useCollection } from "@/hooks/useCollection";
 import { useWeather } from "@/hooks/useWeather";
 import { DailyRecommendation, WeatherData } from "@/types";
 import { NoteTag } from "@/components/shared/NoteTag";
+import { MoodPicker } from "@/components/today/MoodPicker";
 import { parseJson } from "@/lib/utils";
 import Link from "next/link";
 
@@ -227,6 +228,9 @@ export default function TodayPage() {
           </div>
         )}
       </div>
+
+      {/* Mood / on-demand pick */}
+      <MoodPicker ownedCount={owned.length} />
 
       {/* Vibe CTA — inspired by Corner's vibe search */}
       <Link

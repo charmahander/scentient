@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, X, Plus, Loader2 } from "lucide-react";
+import { Search, X, Plus, Loader2, Sparkles } from "lucide-react";
 import { FragranticaSearchResult } from "@/types";
 import { CONCENTRATIONS, SEASONS, OCCASIONS, BOTTLE_SHAPES } from "@/lib/utils";
 import { useCollectionStore } from "@/store/collection";
@@ -13,7 +13,8 @@ interface AddFragranceModalProps {
 const EMPTY_FORM = {
   name: "", brand: "", year: "", concentration: "", description: "",
   accords: "", season: [] as string[], occasion: [] as string[],
-  rating: "", bottleVolume: "", bottleShape: "tall", purchasePrice: "",
+  rating: "", sillage: "", projection: "", longevity: "",
+  bottleVolume: "", bottleShape: "tall", purchasePrice: "",
   owned: true, imageUrl: "", fragranticaUrl: "",
 };
 
@@ -24,7 +25,38 @@ export function AddFragranceModal({ onClose }: AddFragranceModalProps) {
   const [searchResults, setSearchResults] = useState<FragranticaSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [estimating, setEstimating] = useState(false);
   const [tab, setTab] = useState<"search" | "manual">("search");
+
+  const handleEstimate = async () => {
+    if (!form.name || !form.brand) return;
+    setEstimating(true);
+    try {
+      const res = await fetch("/api/ai/estimate-performance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          brand: form.brand,
+          concentration: form.concentration,
+          accords: form.accords.split(",").map((s) => s.trim()).filter(Boolean),
+        }),
+      });
+      const data = await res.json();
+      if (typeof data.sillage === "number") {
+        setForm((f) => ({
+          ...f,
+          sillage: String(data.sillage),
+          projection: String(data.projection),
+          longevity: String(data.longevity),
+        }));
+      }
+    } catch {
+      // leave fields as-is on failure
+    } finally {
+      setEstimating(false);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -87,6 +119,9 @@ export function AddFragranceModal({ onClose }: AddFragranceModalProps) {
       ...form,
       year: form.year ? parseInt(form.year) : undefined,
       rating: form.rating ? parseFloat(form.rating) : undefined,
+      sillage: form.sillage ? parseFloat(form.sillage) : undefined,
+      projection: form.projection ? parseFloat(form.projection) : undefined,
+      longevity: form.longevity ? parseFloat(form.longevity) : undefined,
       bottleVolume: form.bottleVolume ? parseFloat(form.bottleVolume) : undefined,
       purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
       accords: accordArr,
@@ -279,6 +314,39 @@ export function AddFragranceModal({ onClose }: AddFragranceModalProps) {
               <Field label="My Rating (1-10)">
                 <input value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} placeholder="8.5" type="number" min="1" max="10" step="0.1" />
               </Field>
+
+              {/* Performance */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--foreground-subtle)" }}>
+                    Performance
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleEstimate}
+                    disabled={estimating || !form.name || !form.brand}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
+                    style={{
+                      background: estimating || !form.name || !form.brand ? "var(--surface-3)" : "var(--accent-glow)",
+                      color: estimating || !form.name || !form.brand ? "var(--foreground-subtle)" : "var(--accent)",
+                    }}
+                  >
+                    {estimating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    Estimate with AI
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <Field label="Sillage /5">
+                    <input value={form.sillage} onChange={(e) => setForm({ ...form, sillage: e.target.value })} placeholder="3.5" type="number" min="0" max="5" step="0.5" />
+                  </Field>
+                  <Field label="Projection /5">
+                    <input value={form.projection} onChange={(e) => setForm({ ...form, projection: e.target.value })} placeholder="3.5" type="number" min="0" max="5" step="0.5" />
+                  </Field>
+                  <Field label="Longevity hrs">
+                    <input value={form.longevity} onChange={(e) => setForm({ ...form, longevity: e.target.value })} placeholder="8" type="number" min="0" max="24" step="0.5" />
+                  </Field>
+                </div>
+              </div>
 
               <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "var(--surface-2)" }}>
                 <span className="text-sm font-medium">Already own this?</span>

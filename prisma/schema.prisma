@@ -21,6 +21,9 @@ model Fragrance {
   occasion         String   @default("[]")
   accords          String   @default("[]")
   rating           Float?
+  sillage          Float?
+  projection       Float?
+  longevity        Float?
   owned            Boolean  @default(true)
   bottleVolume     Float?
   bottleShape      String?
