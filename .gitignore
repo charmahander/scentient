@@ -47,3 +47,8 @@ node_modules/
 .next/
 prisma/dev.db
 prisma/dev.db-journal
+
+# local sqlite artifacts (incl. misplaced nested path from relative DATABASE_URL)
+*.db
+*.db-journal
+prisma/prisma/
