@@ -2,7 +2,7 @@
 
 import { Suspense, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, ContactShadows } from "@react-three/drei";
+import { OrbitControls, Environment, ContactShadows, Lightformer } from "@react-three/drei";
 import { Fragrance } from "@/types";
 import { ShelfLayout } from "./ShelfLayout";
 
@@ -49,7 +49,12 @@ export function CollectionScene({ fragrances, selectedId, onSelect }: Collection
             blur={2}
             far={4}
           />
-          <Environment preset="city" />
+          {/* Procedural environment for reflections — no network fetch */}
+          <Environment resolution={256}>
+            <Lightformer intensity={1.2} position={[0, 5, -5]} scale={[12, 12, 1]} color="#ffffff" />
+            <Lightformer intensity={0.6} position={[-5, 1, 1]} scale={[6, 6, 1]} color="#c9a96e" />
+            <Lightformer intensity={0.5} position={[5, 2, 2]} scale={[6, 6, 1]} color="#7dd3fc" />
+          </Environment>
         </Suspense>
 
         <OrbitControls
